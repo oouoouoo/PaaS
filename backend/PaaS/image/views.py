@@ -5,41 +5,25 @@ import docker
 # Create your views here.
 
 # set docker client
+from django.views.decorators.http import require_GET, require_POST
+
 docker_client = docker.from_env()
 
 
 #
+@require_GET
 def _image(request):
-    if request.method == 'GET':
-        uid = request.POST.get('uid')
-        return JsonResponse({'errno': 0, })
-    else:
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
-
-
-# 新建镜像
-def build_image(request):
-    if request.method == 'GET':
-        dockerfile = request.FILES.get('dockerfile')
-        docker_client.images.build(fileobj=dockerfile)
-        return JsonResponse({'errno': 0, })
-    else:
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
-
-
-# 拉取镜像
-def pull_image(request):
-    if request.method == 'GET':
-        repository = request.POST.get('repository')
-        docker_client.images.pull(repository=repository)
-        return JsonResponse({'errno': 0, })
-    else:
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
+    image_id = str(request.GET.get('image_id'))
+    try:
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
 
 
 # 查看镜像列表
+@require_GET
 def list_image(request):
-    if request.method == 'GET':
+    try:
         images = docker_client.images.list()
         image_list = []
         for image in images:
@@ -51,15 +35,49 @@ def list_image(request):
             dic["tags"] = image.tags
             image_list.append(dic)
         return JsonResponse({'errno': 0, 'image_list': image_list})
-    else:
+    except:
+        return JsonResponse({'errno': 1})
+
+
+# 查看镜像
+@require_GET
+def get_image(request):
+    image_id = str(request.GET.get('image_id'))
+    try:
+        docker_client.images.remove(image_id)
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
+
+
+# 新建镜像
+@require_POST
+def build_image(request):
+    dockerfile = request.FILES.get('dockerfile')
+    try:
+        docker_client.images.build(fileobj=dockerfile)
+        return JsonResponse({'errno': 0, })
+    except:
         return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
+
+
+# 拉取镜像
+@require_GET
+def pull_image(request):
+    repository = str(request.GET.get('repository'))
+    try:
+        docker_client.images.pull(repository=repository)
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
 
 
 # 删除镜像
+@require_GET
 def delete_image(request):
-    if request.method == 'GET':
-        image_id = request.POST.get('image_id')
+    image_id = str(request.GET.get('image_id'))
+    try:
         docker_client.images.remove(image_id)
-        return JsonResponse({'errno': 0, })
-    else:
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
