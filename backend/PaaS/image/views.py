@@ -42,10 +42,19 @@ def list_image(request):
 # 查看镜像
 @require_GET
 def get_image(request):
-    image_id = str(request.GET.get('image_id'))
+    image = str(request.GET.get('image'))   # ?image是镜像名还是Id
     try:
-        docker_client.images.remove(image_id)
-        return JsonResponse({'errno': 0})
+        image = docker_client.images.get(image)
+        # 提取镜像的相关信息
+        image_info = {
+            'Id': image.id,
+            'Tags': image.tags,
+            'Created': image.attrs['Created'],
+            'Size': image.attrs['Size'],
+            'Architecture': image.attrs['Architecture'],
+            # 可以根据需要提取更多信息
+        }
+        return JsonResponse({'errno': 0, 'res': image_info})
     except:
         return JsonResponse({'errno': 1})
 
@@ -67,6 +76,21 @@ def pull_image(request):
     repository = str(request.GET.get('repository'))
     try:
         docker_client.images.pull(repository=repository)
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
+
+
+# 修改镜像
+@require_POST
+def modify_image(request):
+    image_id = str(request.POST.get('image_id'))
+    try:
+        dockerfile = request.FILES.get("dockerfile")
+        res = docker_client.images.build(
+            fileobj=dockerfile,
+            tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
+        )
         return JsonResponse({'errno': 0})
     except:
         return JsonResponse({'errno': 1})
