@@ -16,6 +16,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+import image.views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # 镜像管理
+    path("image/list", image.views.list_image),     # 查看镜像列表
+    path("image/build", image.views.build_image),   # 新建镜像
+    path("image/pull", image.views.pull_image),     # 拉取镜像
+    path("image/delete", image.views.delete_image), # 删除镜像
+
+    # 容器管理
+
+    # 应用管理
+
 ]
