@@ -22,28 +22,7 @@ def _container(request):
         return JsonResponse({'errno': 1})
 
 
-# 查看容器列表
-@require_GET
-def list_container(request):
-    try:
-        container_list = ctn_list()
-        return JsonResponse({'errno': 0, 'container_list': container_list})
-    except:
-        return JsonResponse({'errno': 1, 'container_list': []})
-
-
-# 查看容器信息
-@require_GET
-def get_container(request):
-    container_id = str(request.GET.get('container_id'))
-    try:
-        res = ctn_get(container_id)
-        return JsonResponse({'errno': 0, 'res': res})
-    except:
-        return JsonResponse({'errno': 1})
-
-
-# 新建容器
+# 新建容器  Done
 @require_POST
 def create_container(request):
     image_name = str(request.GET.get('image_name'))
@@ -57,7 +36,7 @@ def create_container(request):
         return JsonResponse({'errno': 1})
 
 
-# 运行容器
+# 运行容器  Done
 @require_GET
 def run_container(request):
     image_name = str(request.GET.get('image_name'))
@@ -65,13 +44,34 @@ def run_container(request):
     outer_port = str(request.GET.get('outer_port'))
     ports = {inner_port + '/tcp': outer_port}
     try:
-        res = ctn_create(image_name, ports)
+        res = ctn_run(image_name, ports)
         return JsonResponse({'errno': 0, "res": res})
     except:
         return JsonResponse({'errno': 1})
 
 
-# 停止容器
+# 查看容器列表    Done
+@require_GET
+def list_container(request):
+    try:
+        container_list = ctn_list()
+        return JsonResponse({'errno': 0, 'container_list': container_list})
+    except:
+        return JsonResponse({'errno': 1, 'container_list': []})
+
+
+# 查看容器信息    Done
+@require_GET
+def get_container(request):
+    container_id = str(request.GET.get('container_id'))
+    try:
+        res = ctn_get(container_id)
+        return JsonResponse({'errno': 0, 'res': res})
+    except:
+        return JsonResponse({'errno': 1})
+
+
+# 停止容器  Done
 @require_GET
 def stop_container(request):
     container_id = str(request.GET.get('container_id'))
@@ -81,7 +81,19 @@ def stop_container(request):
     except:
         return JsonResponse({'errno': 1})
 
-# 删除容器
+
+# 重启容器  Done
+@require_GET
+def start_container(request):
+    container_id = str(request.GET.get('container_id'))
+    try:
+        res = ctn_start(container_id)
+        return JsonResponse({'errno': 0})
+    except:
+        return JsonResponse({'errno': 1})
+
+
+# 删除容器  Done
 @require_GET
 def remove_container(request):
     container_id = str(request.GET.get('container_id'))

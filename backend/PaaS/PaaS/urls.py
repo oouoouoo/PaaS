@@ -34,12 +34,12 @@ urlpatterns = [
     path("image/modify", image.views.modify_image), # 修改镜像
 
     # 容器管理
-    path("container/list", container.views.list_container),     # 查看容器列表
-    path("container/get", container.views.get_container),       # 查看容器信息
     path("container/create", container.views.create_container), # 新建容器
     path("container/run", container.views.run_container),       # 运行容器
+    path("container/list", container.views.list_container),     # 查看容器列表
+    path("container/get", container.views.get_container),       # 查看容器信息
     path("container/stop", container.views.stop_container),     # 停止容器
+    path("container/start", container.views.start_container),   # 重启容器
     path("container/remove", container.views.remove_container), # 删除容器
 
-    # 应用管理
 ]
