@@ -22,12 +22,16 @@ import image.views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    path("login", image.views.login),
+
     # 镜像管理
+    path("image/build", image.views.build_image),   # 新建镜像
+    path("image/upload", image.views.upload_image), # 上传镜像
+    path("image/pull", image.views.pull_image),     # 拉取镜像
     path("image/list", image.views.list_image),     # 查看镜像列表
     path("image/get", image.views.get_image),       # 查看镜像信息
-    path("image/build", image.views.build_image),   # 新建镜像
-    path("image/pull", image.views.pull_image),     # 拉取镜像
     path("image/delete", image.views.delete_image), # 删除镜像
+    path("image/modify", image.views.modify_image), # 修改镜像
 
     # 容器管理
     path("container/list", container.views.list_container),     # 查看容器列表
@@ -38,5 +42,4 @@ urlpatterns = [
     path("container/remove", container.views.remove_container), # 删除容器
 
     # 应用管理
-
 ]

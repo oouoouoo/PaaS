@@ -1,3 +1,5 @@
+import os
+
 from django.http import JsonResponse
 from django.shortcuts import render
 import docker
@@ -6,6 +8,9 @@ import docker
 
 # set docker client
 from django.views.decorators.http import require_GET, require_POST
+
+from PaaS import settings
+from image.image_controller import load_image
 
 docker_client = docker.from_env()
 
@@ -16,11 +21,63 @@ def _image(request):
     image_id = str(request.GET.get('image_id'))
     try:
         return JsonResponse({'errno': 0})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({'errno': 1})
 
 
-# 查看镜像列表
+# 登录
+@require_POST
+def login(request):
+    username = str(request.GET.get('username'))
+    password = str(request.GET.get('password'))
+    try:
+        if username == 'CR7' and password == '123456':
+            return JsonResponse({'errno': 0})
+        else:
+            return JsonResponse({'errno': 2})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'errno': 1})
+
+# 创建镜像  -Dockerfile Done
+@require_POST
+def build_image(request):
+    dockerfile = request.FILES.get('dockerfile')
+    try:
+        docker_client.images.build(fileobj=dockerfile)
+        return JsonResponse({'errno': 0, })
+    except Exception as e:
+        print(e)
+        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
+
+
+# 上传镜像  tar Done
+@require_POST
+def upload_image(request):
+    try:
+        tar_file = request.FILES.get('tar_file')
+        file_path = os.path.join(settings.MEDIA_ROOT, tar_file.name)
+        tar_file.save(file_path)
+        res = load_image(file_path=file_path)
+        return JsonResponse({'errno': 0})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'errno': 1})
+
+
+# 拉取镜像  Done
+@require_GET
+def pull_image(request):
+    repository = str(request.GET.get('repository'))
+    try:
+        docker_client.images.pull(repository=repository)
+        return JsonResponse({'errno': 0})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'errno': 1})
+
+# 查看镜像列表 Done
 @require_GET
 def list_image(request):
     try:
@@ -35,11 +92,12 @@ def list_image(request):
             dic["tags"] = image.tags
             image_list.append(dic)
         return JsonResponse({'errno': 0, 'image_list': image_list})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({'errno': 1})
 
 
-# 查看镜像
+# 查看镜像 Done
 @require_GET
 def get_image(request):
     image = str(request.GET.get('image'))   # ?image是镜像名还是Id
@@ -55,33 +113,12 @@ def get_image(request):
             # 可以根据需要提取更多信息
         }
         return JsonResponse({'errno': 0, 'res': image_info})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({'errno': 1})
 
 
-# 新建镜像
-@require_POST
-def build_image(request):
-    dockerfile = request.FILES.get('dockerfile')
-    try:
-        docker_client.images.build(fileobj=dockerfile)
-        return JsonResponse({'errno': 0, })
-    except:
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
-
-
-# 拉取镜像
-@require_GET
-def pull_image(request):
-    repository = str(request.GET.get('repository'))
-    try:
-        docker_client.images.pull(repository=repository)
-        return JsonResponse({'errno': 0})
-    except:
-        return JsonResponse({'errno': 1})
-
-
-# 修改镜像
+# 修改镜像 Done
 @require_POST
 def modify_image(request):
     image_id = str(request.POST.get('image_id'))
@@ -92,16 +129,18 @@ def modify_image(request):
             tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
         )
         return JsonResponse({'errno': 0})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({'errno': 1})
 
 
-# 删除镜像
+# 删除镜像 Done
 @require_GET
 def delete_image(request):
     image_id = str(request.GET.get('image_id'))
     try:
         docker_client.images.remove(image_id)
         return JsonResponse({'errno': 0})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({'errno': 1})
