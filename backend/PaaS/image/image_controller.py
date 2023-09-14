@@ -1,8 +1,11 @@
+import docker
+
 from image.views import docker_client
 import re
 import os
 from werkzeug.utils import secure_filename
 
+docker_client = docker.from_env()
 
 def get_image_list():
     images = docker_client.images.list()

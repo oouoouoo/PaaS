@@ -10,7 +10,6 @@ import docker
 from django.views.decorators.http import require_GET, require_POST
 
 from PaaS import settings
-from image.image_controller import load_image
 
 docker_client = docker.from_env()
 
@@ -24,6 +23,17 @@ def _image(request):
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
+
+def load_image(file_path, re_name=None, re_tag=None):
+    try:
+        fp = open(file=file_path, mode='rb')
+        result = docker_client.images.load(data=fp)
+        fp.close()
+        print(result)
+        return 'ok'
+    except Exception as e:
+        print(e)
+        raise Exception(e)
 
 
 # 登录
