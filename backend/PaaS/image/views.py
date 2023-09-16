@@ -24,6 +24,7 @@ def _image(request):
         print(e)
         return JsonResponse({'errno': 1})
 
+
 def load_image(file_path, re_name=None, re_tag=None):
     try:
         fp = open(file=file_path, mode='rb')
@@ -49,6 +50,7 @@ def login(request):
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
+
 
 # 创建镜像  -Dockerfile Done
 @require_POST
@@ -104,6 +106,7 @@ def pull_image(request):
         print(e)
         return JsonResponse({'errno': 1})
 
+
 # 查看镜像列表 Done
 @require_GET
 def list_image(request):
@@ -127,7 +130,7 @@ def list_image(request):
 # 查看镜像 Done
 @require_GET
 def get_image(request):
-    image = str(request.GET.get('image'))   # ?image是镜像名还是Id
+    image = str(request.GET.get('image_id'))  # ?image是镜像名还是Id
     try:
         image = docker_client.images.get(image)
         # 提取镜像的相关信息
@@ -139,7 +142,7 @@ def get_image(request):
             'Architecture': image.attrs['Architecture'],
             # 可以根据需要提取更多信息
         }
-        return JsonResponse({'errno': 0, 'res': image_info})
+        return JsonResponse({'errno': 0, 'image_info': image_info})
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
@@ -155,7 +158,6 @@ def delete_image(request):
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
-
 
 
 # 修改镜像 Done
@@ -184,4 +186,3 @@ def modify_image(request):
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
-

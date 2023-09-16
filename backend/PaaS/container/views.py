@@ -21,6 +21,7 @@ def _container(request):
     except:
         return JsonResponse({'errno': 1})
 
+
 # 新建运行容器
 @require_POST
 def run_container(request):
@@ -28,6 +29,7 @@ def run_container(request):
         # 获取请求中的参数，例如容器名称、镜像、容器端口、环境变量等
         container_name = request.POST.get('container_name')
         image_name = request.POST.get('image_name')
+        # command = request.values.getlist('command[]')
         container_port = request.POST.get('container_port')
         if container_port is not None:
             container_port = int(container_port)
@@ -41,6 +43,7 @@ def run_container(request):
         environment_vars = {
             'ENV_VAR1': env_var1
         }
+        '''
         # 创建容器配置
         container_config = {
             'image': image_name,
@@ -48,10 +51,26 @@ def run_container(request):
             'ports': {container_port: container_port},
             'environment': environment_vars,
             'detach': True,  # 后台模式运行容器
-            'command': 'nginx',  # 指定要运行的命令
+            # 'command': 'nginx',  # 指定要运行的命令
         }
+        '''
+        cmd = ["/bin/sh", "-c", "#(nop) ", "CMD [\"nginx\" \"-g\" \"daemon off;\"]"],
         # 创建并启动容器
-        container = client.containers.run(**container_config)
+        # container = client.containers.run(**container_config)
+        container = client.containers.run(image=image_name, name=container_name,
+                                          # command='nginx',
+                                          # command='/usr/sbin/nginx',
+                                          # command="/docker-entrypoint.sh nginx -g 'daemon off;'",
+                                          # command=["nginx", "-g", "daemon off;"],
+                                          # command="CMD [\"nginx\" \"-g\" \"daemon off;\"]",
+                                          # command= ["CMD [\"nginx\" \"-g\" \"daemon off;\"]"],
+                                          # command=["\"nginx\" \"-g\" \"daemon off;\""],
+                                          command=["/bin/sh", "-c", "#(nop) ", "CMD [\"nginx\" \"-g\" \"daemon off;\"]"],
+                                          environment={'NGINX_ENV_VAR': 'my_value'},
+                                          # environment=environment_vars,
+                                          ports={container_port: container_port},
+                                          detach=True)  # 后台模式运行容器
+        return JsonResponse({'errno': 0})
     except Exception as e:
         # 捕获异常并打印异常信息
         print(f"Error: {str(e)}")
@@ -126,7 +145,6 @@ def remove_container(request):
         return JsonResponse({'errno': 0})
     except:
         return JsonResponse({'errno': 1})
-
 
 
 # 新建容器  Done
