@@ -53,9 +53,21 @@ def login(request):
 # 创建镜像  -Dockerfile Done
 @require_POST
 def build_image(request):
-    dockerfile = request.FILES.get('dockerfile')
     try:
-        docker_client.images.build(fileobj=dockerfile)
+        # 获取上传的Dockerfile文件
+        dockerfile = request.FILES.get('dockerfile')
+        # 创建dockerfile子文件夹（如果不存在）
+        dockerfile_dir = os.path.join(settings.MEDIA_ROOT, 'dockerfile')
+        os.makedirs(dockerfile_dir, exist_ok=True)
+        # 构建文件保存路径
+        file_path = os.path.join(dockerfile_dir, dockerfile.name)
+        # dockerfile.save(file_path)
+        # 使用 write 方法将文件保存到文件系统
+        with open(file_path, 'wb') as destination:
+            for chunk in dockerfile.chunks():
+                destination.write(chunk)
+
+        docker_client.images.build(path=dockerfile_dir, quiet=False)
         return JsonResponse({'errno': 0, })
     except Exception as e:
         print(e)
@@ -66,11 +78,16 @@ def build_image(request):
 @require_POST
 def upload_image(request):
     try:
+        # 获取上传的tar文件
         tar_file = request.FILES.get('tar_file')
-        file_path = os.path.join(settings.MEDIA_ROOT, tar_file.name)
+        # 创建tar子文件夹（如果不存在）
+        tarfile_dir = os.path.join(settings.MEDIA_ROOT, 'tar')
+        os.makedirs(tarfile_dir, exist_ok=True)
+        # 构建文件保存路径
+        file_path = os.path.join(tarfile_dir, tar_file.name)
         tar_file.save(file_path)
         res = load_image(file_path=file_path)
-        return JsonResponse({'errno': 0})
+        return JsonResponse({'errno': 0, 'res': res})
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
@@ -128,22 +145,6 @@ def get_image(request):
         return JsonResponse({'errno': 1})
 
 
-# 修改镜像 Done
-@require_POST
-def modify_image(request):
-    image_id = str(request.POST.get('image_id'))
-    try:
-        dockerfile = request.FILES.get("dockerfile")
-        res = docker_client.images.build(
-            fileobj=dockerfile,
-            tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
-        )
-        return JsonResponse({'errno': 0})
-    except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
-
-
 # 删除镜像 Done
 @require_GET
 def delete_image(request):
@@ -154,3 +155,33 @@ def delete_image(request):
     except Exception as e:
         print(e)
         return JsonResponse({'errno': 1})
+
+
+
+# 修改镜像 Done
+@require_POST
+def modify_image(request):
+    image_id = str(request.POST.get('image_id'))
+    try:
+        # 获取上传的Dockerfile文件
+        dockerfile = request.FILES.get('dockerfile')
+        # 创建dockerfile子文件夹（如果不存在）
+        dockerfile_dir = os.path.join(settings.MEDIA_ROOT, 'dockerfile')
+        os.makedirs(dockerfile_dir, exist_ok=True)
+        # 构建文件保存路径
+        file_path = os.path.join(dockerfile_dir, dockerfile.name)
+        # dockerfile.save(file_path)
+        # 使用 write 方法将文件保存到文件系统
+        with open(file_path, 'wb') as destination:
+            for chunk in dockerfile.chunks():
+                destination.write(chunk)
+
+        res = docker_client.images.build(
+            path=dockerfile_dir,
+            tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
+        )
+        return JsonResponse({'errno': 0})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'errno': 1})
+
