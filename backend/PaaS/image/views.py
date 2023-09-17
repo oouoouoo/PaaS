@@ -98,9 +98,13 @@ def upload_image(request):
 # 拉取镜像  Done
 @require_POST
 def pull_image(request):
-    repository = str(request.GET.get('repository'))
     try:
-        docker_client.images.pull(repository=repository)
+        repository = str(request.POST.get('repository'))
+        tag = str(request.POST.get('tag', 'latest'))
+        print("POST is :" + str(request.POST))
+        print("repository is " + repository)
+        print("tag is " + tag)
+        docker_client.images.pull(repository=repository, tag=tag)
         return JsonResponse({'errno': 0, 'msg': "拉取镜像成功"})
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -151,10 +155,38 @@ def get_image(request):
 # 删除镜像 Done
 @require_POST
 def delete_image(request):
+    # 删除所有镜像
     image_id = str(request.POST.get('image_id'))
     try:
-        docker_client.images.remove(image_id)
+        print("POST is :" + str(request.POST))
+        image = docker_client.images.get(image_id)
+        print("tags len is", len(image.tags))
+        print("tags are", image.tags)
+        for tag in image.tags:
+            parts = tag.split(":")
+            image_name = parts[0]
+            print("delete tag ", image_name)
+            docker_client.images.remove(image_name)
         return JsonResponse({'errno': 0, 'msg': "删除镜像成功"})
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
+
+
+# 删除镜像标签 Done
+@require_POST
+def delete_image_by_tag(request):
+    image_id = str(request.POST.get('image_id'))
+    tag = str(request.POST.get('tag'))
+    try:
+        print("POST is :" + str(request.POST))
+        image = docker_client.images.get(image_id)
+        parts = tag.split(":")
+        image_name = parts[0]
+        print("delete tag ", image_name)
+        docker_client.images.remove(image_name)
+        # docker_client.images.remove(image_id)
+        return JsonResponse({'errno': 0, 'msg': "删除镜像标签成功"})
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'errno': 1, 'msg': str(e)})
@@ -163,8 +195,9 @@ def delete_image(request):
 # 修改镜像 Done
 @require_POST
 def modify_image(request):
-    image_id = str(request.POST.get('image_id'))
     try:
+        image_id = str(request.POST.get('image_id'))
+        new_image_name = str(request.POST.get('new_image_name'))
         # 获取上传的Dockerfile文件
         dockerfile = request.FILES.get('dockerfile')
         # 创建dockerfile子文件夹（如果不存在）
@@ -177,11 +210,14 @@ def modify_image(request):
         with open(file_path, 'wb') as destination:
             for chunk in dockerfile.chunks():
                 destination.write(chunk)
-
+        docker_client.images.remove(image_id)
         res = docker_client.images.build(
             path=dockerfile_dir,
-            tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
+            # tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
+            tag=new_image_name,
         )
+        # 设置新的镜像标签
+        # docker_client.images.get(image_id).tag(new_image_name)
         return JsonResponse({'errno': 0, 'msg': "修改镜像成功"})
     except Exception as e:
         print(f"Error: {str(e)}")

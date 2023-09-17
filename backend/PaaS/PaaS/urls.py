@@ -31,6 +31,7 @@ urlpatterns = [
     path("image/list", image.views.list_image),     # 查看镜像列表
     path("image/get", image.views.get_image),       # 查看镜像信息
     path("image/delete", image.views.delete_image), # 删除镜像
+    path("image/delete/tag", image.views.delete_image_by_tag), # 删除标签
     path("image/modify", image.views.modify_image), # 修改镜像
 
     # 容器管理

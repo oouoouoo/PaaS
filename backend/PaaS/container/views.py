@@ -39,7 +39,7 @@ def run_container(request):
         }
         # container = client.containers.run(image='nginx', name='test-myself', command=["nginx", "-g", "daemon off;"],
         # detach=True, ports={80: 30090})
-        container = client.containers.run(image='nginx', name=container_name,
+        container = client.containers.run(image=image_name, name=container_name,
                                           command=["nginx", "-g", "daemon off;"],
                                           ports={80: container_port},
                                           environment={'ENV_VAR1': env_var1},
@@ -57,13 +57,18 @@ def list_container(request):
         containers = client.containers.list(all=True)
         container_list = []
         for container in containers:
+            res = ctn_get(container.id)
+            container_list.append(res)
+            '''
             dic = {}
             dic["id"] = container.id
+            dic["short_id"] = container.short_id
             dic["name"] = container.name
             dic["status"] = container.status
             dic["image"] = container.image.tags[0] if container.image.tags else ""
             dic["ports"] = container.ports
             container_list.append(dic)
+            '''
         return JsonResponse({'errno': 0, 'msg': "获取容器列表成功", 'container_list': container_list})
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -87,6 +92,8 @@ def get_container(request):
 def stop_container(request):
     container_id = str(request.POST.get('container_id'))
     try:
+        print("POST :"+ str(request.POST))
+        print("ID is "+ container_id)
         # 容器状态由Up变成Exited，容器不再运行
         container = client.containers.get(container_id)
         container.stop()

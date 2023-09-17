@@ -30,6 +30,7 @@ def ctn_get(ctn_id):
     ctn = client.containers.get(ctn_id)
     ctn_attr = {}
     ctn_attr['Id'] = ctn.id
+    ctn_attr['Short_Id'] = ctn.short_id
     ctn_attr['Created'] = list(ctn.attrs.items())[1][1]
     ctn_attr['Port'] = list(ctn.attrs.items())[18][1]['PortBindings']
     try:
