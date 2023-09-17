@@ -39,7 +39,7 @@ def run_container(request):
         }
         # container = client.containers.run(image='nginx', name='test-myself', command=["nginx", "-g", "daemon off;"],
         # detach=True, ports={80: 30090})
-        container = client.containers.run(image=image_name, name=container_name,
+        container = client.containers.run(image='nginx', name=container_name,
                                           command=["nginx", "-g", "daemon off;"],
                                           ports={80: container_port},
                                           environment={'ENV_VAR1': env_var1},
@@ -83,9 +83,9 @@ def get_container(request):
 
 
 # 停止容器  Done
-@require_GET
+@require_POST
 def stop_container(request):
-    container_id = str(request.GET.get('container_id'))
+    container_id = str(request.POST.get('container_id'))
     try:
         # 容器状态由Up变成Exited，容器不再运行
         container = client.containers.get(container_id)
@@ -97,9 +97,9 @@ def stop_container(request):
 
 
 # 重启容器  Done
-@require_GET
+@require_POST
 def start_container(request):
-    container_id = str(request.GET.get('container_id'))
+    container_id = str(request.POST.get('container_id'))
     try:
         # 容器状态由Exited变成Up，容器重新启动并运行
         container = client.containers.get(container_id)
@@ -111,9 +111,9 @@ def start_container(request):
 
 
 # 删除容器  Done
-@require_GET
+@require_POST
 def remove_container(request):
-    container_id = str(request.GET.get('container_id'))
+    container_id = str(request.POST.get('container_id'))
     try:
         container = client.containers.get(container_id)
         container.stop()
@@ -127,9 +127,9 @@ def remove_container(request):
 # 新建容器  Done
 @require_POST
 def create_container2(request):
-    image_name = str(request.GET.get('image_name'))
-    inner_port = str(request.GET.get('inner_port'))
-    outer_port = str(request.GET.get('outer_port'))
+    image_name = str(request.POST.get('image_name'))
+    inner_port = str(request.POST.get('inner_port'))
+    outer_port = str(request.POST.get('outer_port'))
     ports = {inner_port + '/tcp': outer_port}
     try:
         res = ctn_create(image_name, ports)
@@ -140,11 +140,11 @@ def create_container2(request):
 
 
 # 运行容器  Done
-@require_GET
+@require_POST
 def run_container2(request):
-    image_name = str(request.GET.get('image_name'))
-    inner_port = str(request.GET.get('inner_port'))
-    outer_port = str(request.GET.get('outer_port'))
+    image_name = str(request.POST.get('image_name'))
+    inner_port = str(request.POST.get('inner_port'))
+    outer_port = str(request.POST.get('outer_port'))
     ports = {inner_port + '/tcp': outer_port}
     try:
         res = ctn_run(image_name, ports)

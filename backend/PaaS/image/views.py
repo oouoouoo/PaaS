@@ -96,7 +96,7 @@ def upload_image(request):
 
 
 # 拉取镜像  Done
-@require_GET
+@require_POST
 def pull_image(request):
     repository = str(request.GET.get('repository'))
     try:
@@ -149,9 +149,9 @@ def get_image(request):
 
 
 # 删除镜像 Done
-@require_GET
+@require_POST
 def delete_image(request):
-    image_id = str(request.GET.get('image_id'))
+    image_id = str(request.POST.get('image_id'))
     try:
         docker_client.images.remove(image_id)
         return JsonResponse({'errno': 0, 'msg': "删除镜像成功"})
