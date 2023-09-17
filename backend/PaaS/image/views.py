@@ -48,8 +48,8 @@ def login(request):
         else:
             return JsonResponse({'errno': 2})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 创建镜像  -Dockerfile Done
@@ -70,10 +70,10 @@ def build_image(request):
                 destination.write(chunk)
 
         docker_client.images.build(path=dockerfile_dir, quiet=False)
-        return JsonResponse({'errno': 0, })
+        return JsonResponse({'errno': 0, 'msg': "通过Dockerfile创建镜像成功"})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1, 'msg': "请求方式错误"})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 上传镜像  tar Done
@@ -89,10 +89,10 @@ def upload_image(request):
         file_path = os.path.join(tarfile_dir, tar_file.name)
         tar_file.save(file_path)
         res = load_image(file_path=file_path)
-        return JsonResponse({'errno': 0, 'res': res})
+        return JsonResponse({'errno': 0, 'msg': "上传新建镜像成功", 'res': res})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 拉取镜像  Done
@@ -101,10 +101,10 @@ def pull_image(request):
     repository = str(request.GET.get('repository'))
     try:
         docker_client.images.pull(repository=repository)
-        return JsonResponse({'errno': 0})
+        return JsonResponse({'errno': 0, 'msg': "拉取镜像成功"})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 查看镜像列表 Done
@@ -121,10 +121,10 @@ def list_image(request):
             dic["short_id"] = image.short_id
             dic["tags"] = image.tags
             image_list.append(dic)
-        return JsonResponse({'errno': 0, 'image_list': image_list})
+        return JsonResponse({'errno': 0, 'msg': "获取镜像列表成功", 'image_list': image_list})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 查看镜像 Done
@@ -142,10 +142,10 @@ def get_image(request):
             'Architecture': image.attrs['Architecture'],
             # 可以根据需要提取更多信息
         }
-        return JsonResponse({'errno': 0, 'image_info': image_info})
+        return JsonResponse({'errno': 0, 'msg': "获取镜像信息成功", 'image_info': image_info})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 删除镜像 Done
@@ -154,10 +154,10 @@ def delete_image(request):
     image_id = str(request.GET.get('image_id'))
     try:
         docker_client.images.remove(image_id)
-        return JsonResponse({'errno': 0})
+        return JsonResponse({'errno': 0, 'msg': "删除镜像成功"})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
 
 
 # 修改镜像 Done
@@ -182,7 +182,7 @@ def modify_image(request):
             path=dockerfile_dir,
             tag=image_id,  # 使用原有的镜像标识符作为标签，并替换原有的镜像
         )
-        return JsonResponse({'errno': 0})
+        return JsonResponse({'errno': 0, 'msg': "修改镜像成功"})
     except Exception as e:
-        print(e)
-        return JsonResponse({'errno': 1})
+        print(f"Error: {str(e)}")
+        return JsonResponse({'errno': 1, 'msg': str(e)})
